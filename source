@@ -1,0 +1,15 @@
+# test case #1
+REG:abc*
+a
+b
+c
+ab
+bc
+abc
+abcc
+
+# test case #2: the sample from textbook
+REG:(a|b)*abb
+ababb
+aabbabb
+aabbaab
