@@ -3,19 +3,19 @@
 #include "regexstate.h"
 using namespace std;
 RegExState::~RegExState() {
-	m_NFAStates.clear();
-	m_Transition.clear();
+	NFAStates_SET.clear();
+	transition_table.clear();
 }
 
 RegExState::RegExState(std::set<RegExState*> NFAState, int nID) {
-	m_NFAStates = NFAState;
-	m_nStateID = nID;
-	m_bAcceptingState = false;
-	m_GroupID = 0;
-	StateIterator iter;
+	NFAStates_SET = NFAState;
+	state_ID = nID;
+	be_acceptingState = false;
+	Group_ID = 0;
+	state_iter iter;
 	for(iter = NFAState.begin(); iter != NFAState.end(); ++iter) {
-		if((*iter)->m_bAcceptingState) {
-			m_bAcceptingState = true;
+		if((*iter)->be_acceptingState) {
+			be_acceptingState = true;
 		}
 	}
 }
@@ -23,41 +23,42 @@ RegExState::RegExState(const RegExState &other){
 	*this = other;
 }
 
-void RegExState::AddTransition(char inputCh, RegExState *pState){
-	m_Transition.insert(std::make_pair(inputCh, pState));
+
+void RegExState::Add_Transition(char inputCh, RegExState *pState){
+	transition_table.insert(std::make_pair(inputCh, pState));
 }
 
-void RegExState::RemoveTransition(RegExState* pState) {
+void RegExState::Remove_Transition(RegExState* pState) {
 	std::multimap<char, RegExState*>::iterator iter;
-	for(iter = m_Transition.begin(); iter != m_Transition.end();) {
+	for(iter = transition_table.begin(); iter != transition_table.end();) {
 		RegExState *toState = iter->second;
 		if(toState == pState)
-			m_Transition.erase(iter++);
+			transition_table.erase(iter++);
 		else 
 			++iter;
 	}
 }
 
-void RegExState::GetTransition(char inputCh, Table &States) {
+void RegExState::Get_Transition(char inputCh, Table &States) {
 	States.clear();
 	std::multimap<char, RegExState*>::iterator iter;
-	for(iter = m_Transition.lower_bound(inputCh); iter != m_Transition.upper_bound(inputCh); ++iter) {
+	for(iter = transition_table.lower_bound(inputCh); iter != transition_table.upper_bound(inputCh); ++iter) {
 		RegExState *pState = iter->second;
 		States.push_back(pState);
 	}
 }
 
-std::set<RegExState*>& RegExState::GetNFAState() { 
-	return m_NFAStates; 
+std::set<RegExState*>& RegExState::Get_NFA_state() { 
+	return NFAStates_SET; 
 }
 
 bool RegExState::IsDeadEnd() {
-	if(m_bAcceptingState)
+	if(be_acceptingState)
 		return false;
-	if(m_Transition.empty())
+	if(transition_table.empty())
 		return true;
 	std::multimap<char, RegExState*>::iterator iter;
-	for(iter=m_Transition.begin(); iter!=m_Transition.end(); ++iter){
+	for(iter=transition_table.begin(); iter!=transition_table.end(); ++iter){
 		RegExState *toState = iter->second;
 		if(toState != this)
 			return false;
@@ -66,26 +67,21 @@ bool RegExState::IsDeadEnd() {
 }	
 
 RegExState& RegExState::operator=(const RegExState& other) { 
-	this->m_Transition	= other.m_Transition; 
-	this->m_nStateID	= other.m_nStateID;
-	this->m_NFAStates	= other.m_NFAStates;
+	this->transition_table	= other.transition_table; 
+	this->state_ID	= other.state_ID;
+	this->NFAStates_SET	= other.NFAStates_SET;
 	return *this;
 }
 
 bool RegExState::operator==(const RegExState& other) {
-	if(m_NFAStates.empty())
-		return(m_nStateID == other.m_nStateID);
+	if(NFAStates_SET.empty())
+		return(state_ID == other.state_ID);
 	else 
-		return(m_NFAStates == other.m_NFAStates);
+		return(NFAStates_SET == other.NFAStates_SET);
 }
 std::string RegExState::getStringID(){
-	std::string result;
 	std::stringstream out;
-	//if(m_bAcceptingState){
-	//	out << "{" << m_nStateID << "}";
-	//} else {
-		out << m_nStateID;
-	//}
+	out << state_ID;
 	return out.str();
 }
 

@@ -16,45 +16,49 @@ public:
 	RegEx();
 	~RegEx();
 
-	bool Compile(std::string strRegEx);
-	bool Match(std::string strText);
+	bool RE_compile(std::string strRegEx);
+	bool Dose_Match(std::string strText);
 	typedef std::vector<RegExState*> Table;
-	typedef Table::reverse_iterator TableReverseIterator;
-	typedef Table::iterator TableIterator; 
-	typedef std::set<RegExState*>::iterator StateIterator;
+	typedef Table::iterator table_iter; 
+	typedef std::set<RegExState*>::iterator state_iter;
 
 
 
 private:
-	Table m_NFATable;
-	Table m_DFATable;
+	Table NFA_Table;
+	Table DFA_Table;
 
-	std::stack<Table >       m_CharacterClassStack;
-	std::stack<char>         m_ExpressionStack;
-	std::set<char>           m_InputSet;
-	std::string              m_strText;
-	std::string              m_PostStrRegEx;
-	char*                    m_InfixRegEx;
-	char                     m_CurPreProcChar;
-	int                      m_nNextStateID;
+	std::vector <std::set<int>>group;
 
-	bool ConstructThompsonNFA();
-	void PushOnCharacterStack(char chInput);
-	bool PopTable(Table  &NFATable);
-	bool Concatenate();
+	std::set<int> state_set;
+	std::stack<Table >       character_stack;
+	std::stack<char>         expression_stack;
+	std::set<char>           InputCh_SET;
+	std::string              stringText;
+	std::string              post_order_RE;
+	char*                    infix_order_RE;
+	char                     current_prePro_char;
+	int                      NextState_ID;
+
+	bool Construct_NFA();
+	void Push_character_stack(char chInput);
+	bool pop_table(Table  &NFATable);
+	bool Connect();
 	bool Closure();
 	bool ClosureOptional();
 	bool ClosurePlus();
 	bool Or();
-	bool IsMetaChar(char inputCh); 
-	bool IsInput(char inputCh);
-	bool IsLeftParan(char inputCh); 
-	bool IsRightParan(char inputCh); 
+	bool Is_Meta(char inputCh); 
+	bool Is_inputCH(char inputCh);
+	bool Is_Left_Brackets(char inputCh); 
+	bool Is_Right_Brackets(char inputCh); 
+	bool Should_be_otherGroup(std::string );
 	void EpsilonClosure(std::set<RegExState*> T, std::set<RegExState*> &Res);
 	void Move(char chInput, std::set<RegExState*> T, std::set<RegExState*> &Res);
 	void ConvertNFAtoDFA();
 	void ReduceDFA();
 	void CleanUp();
+	void PrintMinimizeDFA_Group();
 
 	int CovertToPostfix();
 	int PreProcessLiterals();
