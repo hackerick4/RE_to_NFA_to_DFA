@@ -36,6 +36,8 @@ bool RegEx::Is_Left_Brackets(char inputCh)  { return(inputCh == OPEN_PAREN);  }
 bool RegEx::Is_Right_Brackets(char inputCh) { return(inputCh == CLOSE_PAREN); }
 
 void RegEx::CleanUp() {
+	group.clear();
+	state_set.clear();
 	for(int i = 0; i < (int)NFA_Table.size(); ++i) {
 		delete NFA_Table[i];
 	}
@@ -49,11 +51,9 @@ void RegEx::CleanUp() {
 
 	while(!character_stack.empty())
 		character_stack.pop();
-
-	while(!expression_stack.empty())
+    while(!expression_stack.empty())
 		expression_stack.pop();
-
-	InputCh_SET.clear();
+    InputCh_SET.clear();
 
 }
 
@@ -80,8 +80,7 @@ bool RegEx::Connect() { //a.b
 }
 
 void RegEx::Push_character_stack(char chInput) {
-
-	RegExState *s0 = new RegExState(NextState_ID++);
+    RegExState *s0 = new RegExState(NextState_ID++);
 	RegExState *s1 = new RegExState(NextState_ID++);
 
 	s0->Add_Transition(chInput, s1); //1--a-->2
@@ -206,8 +205,7 @@ void RegEx::EpsilonClosure(std::set<RegExState*> startSet, std::set<RegExState*>
 }
 
 void RegEx::Move(char chInput, std::set<RegExState*> NFAState, std::set<RegExState*> &Result) {
-
-	Result.clear();
+    Result.clear();
 	state_iter iter;
 	for(iter = NFAState.begin(); iter != NFAState.end(); ++iter) {
 		Table States;
@@ -308,7 +306,7 @@ bool RegEx::Should_be_otherGroup(string s){
    return false;
 }
 void RegEx::MinimizeDFA () {
-	group.clear();
+	
 	set<int> newParty;
 	for(int i = 0; i < (int)DFA_Table.size(); i++) state_set.insert(i);
 	for(int i = 0; i < (int)DFA_Table.size(); i++) {
@@ -330,14 +328,15 @@ void RegEx::MinimizeDFA () {
 					newParty.insert(  atoi(DFA_Table[i]->getStringID().c_str()) );
 					group.push_back(newParty);
 					newParty.clear();
-					if (!(state_set.find(i)!=state_set.end())) break;
+					if (!(state_set.find(i)!=state_set.end())) 
+						break;
 					state_set.erase( atoi(DFA_Table[i]->getStringID().c_str()));
 					i=0;
 				}
 			}
 		}
 	}
-	group.push_back(newParty);
+	if (group.size()>1)group.push_back(newParty);
 	vector <std::set<int>> ::iterator it=group.end()-1;
 	(*it).insert( state_set.begin(),state_set.end());
 	 sort(group.begin(), group.end());
@@ -397,8 +396,8 @@ bool RegEx::RE_compile(std::string strRegEx) {
 
 	pop_table( NFA_Table);
 	NFA_Table[NFA_Table.size() - 1 ]->be_acceptingState = true;
-	cout << "\n=======NFA_transition table======="<<endl;
-	PrintTable(NFA_Table);
+	//cout << "\n=======NFA_transition table======="<<endl;
+	//PrintTable(NFA_Table);
 	ConvertNFAtoDFA();
 	cout << "\n=======DFA_transition table======="<<endl;
 	PrintTable(DFA_Table);
@@ -552,7 +551,7 @@ void RegEx::PrintMinimizeDFA_Group(){
 	for (vector <std::set<int>> ::iterator it=group.begin(); it!= group.end();++it){
 		for( set<int>::iterator set_it = (*it).begin(); set_it != (*it).end(); set_it++) {
 			if (set_it== (*it).begin()) cout << "{ ";
-			cout <<*set_it;
+			cout <<*set_it<< " ";
     }
 		cout << " } ";
 }

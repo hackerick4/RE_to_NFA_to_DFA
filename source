@@ -1,5 +1,5 @@
 # test case #1
-REG:abc*
+REG:a|b*c+a*bcc*
 b
 c
 ab
